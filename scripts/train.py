@@ -20,8 +20,8 @@ from torch.distributed import init_process_group, destroy_process_group
 
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--resume', default="/root/GoPhoto/models/BiRefNet-general-epoch_244.pth", type=str, help='path to latest checkpoint')
-parser.add_argument('--epochs', default=245, type=int)
+parser.add_argument('--resume', default="./GoPhoto/models/BiRefNet-general-epoch_244.pth", type=str, help='path to latest checkpoint')
+parser.add_argument('--epochs', default=249, type=int)
 parser.add_argument('--ckpt_dir', default='ckpt/tmp', help='Temporary folder')
 parser.add_argument('--dist', default=False, type=lambda x: x == 'True')
 # parser.add_argument('--use_accelerate', action='store_true', help='`accelerate launch --multi_gpu train.py --use_accelerate`. Use accelerate for training, good for FP16/BF16/...')
@@ -120,7 +120,10 @@ def init_models_optimizers(epochs, to_be_distributed):
             model = model.to(device)
             model = DDP(model, device_ids=[device])
         else:
+            print(f"GPU memory allocation before model to device: {torch.cuda.memory_allocated() / 1e6} MB")
             model = model.to(device)
+            print(f"GPU memory allocation after model to device: {torch.cuda.memory_allocated() / 1e6} MB")
+
     if config.compile:
         model = torch.compile(model, mode=['default', 'reduce-overhead', 'max-autotune'][0])
     if config.precisionHigh:
@@ -168,8 +171,13 @@ class Trainer:
             inputs = batch[0].to(device)
             gts = batch[1].to(device)
             class_labels = batch[2].to(device)
+
+        print(inputs.defive)
+        print(next(self.model.parameters()).device)
+
         self.optimizer.zero_grad()
         scaled_preds, class_preds_lst = self.model(inputs)
+
         if config.out_ref:
             (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
             for _idx, (_gdt_pred, _gdt_label) in enumerate(zip(outs_gdt_pred, outs_gdt_label)):
