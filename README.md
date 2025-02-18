@@ -1,1 +1,0 @@
-# BiRefNet-fine-tuning2
