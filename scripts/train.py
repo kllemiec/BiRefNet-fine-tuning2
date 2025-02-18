@@ -172,7 +172,7 @@ class Trainer:
             gts = batch[1].to(device)
             class_labels = batch[2].to(device)
 
-        print(inputs.defive)
+        print(inputs.device)
         print(next(self.model.parameters()).device)
 
         self.optimizer.zero_grad()
